@@ -35,6 +35,10 @@ class Post{
         $sql = "Select * from post JOIN user ON post.ownerId = user.schoolId where postId = $postId";
         return mysqli_query($this->conn,$sql);
     }
+    public function getCountPost($ownerId){
+        $sql = "SELECT count(*) as cpost from post where ownerId = $ownerId";
+        return mysqli_query($this->conn,$sql);
+    }
     public function getTimePast($d){
         $finaltime = "";
     		$current_date_time=date("Y-m-d h:i:s");

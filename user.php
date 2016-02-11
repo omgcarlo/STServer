@@ -280,6 +280,36 @@ if(isset($_GET['action'])){
     }
       echo json_encode(array('Follow' => $output));
   }
+  else if($action == "getUserCredentials"){
+
+      $imongId = $_POST['imo'];
+      if(isset($_POST['iya'])){
+        $iyangId = $_POST['iya'];
+        $res = $obj->getUserDetails($iyangId);
+      }
+      else{
+        $res = $obj->getUserDetails($imongId);
+      }
+      $rowUser = mysqli_fetch_array($res);
+      $userd = array();
+      $userd['full_name'] = $rowUser['full_name'];
+      $userd['username'] = $rowUser['username'];
+      $userd['bio'] = $rowUser['bio'];
+      $followers = count(explode(",",$rowUser['followers']))-1;
+      $followings = count(explode(",",$rowUser['following_ids']))-1;
+      $userd['followers'] = $followers;
+      $userd['followings'] = $followings;
+      include_once 'post.php';
+      $post = new Post();
+      $rowPost = mysqli_fetch_array($post->getCountPost($userId));
+      $userd['posts'] = $rowPost['cpost'];
+      if($iyangId != null){
+        $userd['isFollowed'] =  $obj->isFollowed($imongId,$iyangId);
+      }
+      
+
+      echo json_encode(array("User" => $userId),JSON_PRETTY_PRINT);
+  }
 }
 
 
