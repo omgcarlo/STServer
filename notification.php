@@ -2,27 +2,42 @@
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
 
-include_once 'dbs.php';
-$dbs = new dbs();
+include 'notification.php';
 
-$conn = $dbs->connect();
+$obj = new Notification();
+if(isset($_GET['action'])){
+  $action = $_GET['action'];
+  if($action == 'get'){
+      $ownerId = $_POST['ownerId'];
+      $res = $obj->selectNotification($ownerId);
+      if($res){
+        $rowNotification = mysqli_fetch_array($res);
+        $output = array();
+        $output['Notification'] = $rowNotification['reference'];
+        $output['notificationId'] = $rowNotification['notificationId'];
+        $output['description'] = $rowNotification['description'];
+        $output['referenceId'] = $rowNotification['referenceId'];
+        if($rowNotification['fromId'] != NULL){
+          include_once 'user.php';
+          $user = new User();
 
-
-if (mysqli_connect_errno($conn))
-{
-   echo "Failed to connect to MySQL: " . mysqli_connect_error();
+          $rowUser = mysqli_fetch_array($user->getUserDetails($rowNotification['fromId']));
+          $output['from_username'] = $rowUser['username'];
+          $output['from_userId'] =  $rowUser['schoolId'];
+        }
+        echo json_encode(array("Notification" => $ouput),JSON_PRETTY_PRINT);
+    }
+  }
+  elseif ($action == 'update') {
+    $res = $obj->updateStatus($_POST['notificationId']);
+    $output = array();
+    if($res){
+      $output['Success'] = true;
+    }
+    else{
+      $output['Success'] = false;
+    }
+  }
 }
-
-class Notification{
-	private $conn;
-	public function __construct(){
-		 $dbs = new dbs();
-        $this->conn = $dbs->connect();
-	}
-}
-
-$obj = new Activity();
-//  THIS PART IS FOR TESTIN PURPOSES
-
 
 ?>

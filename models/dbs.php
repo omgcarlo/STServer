@@ -8,7 +8,7 @@ class dbs{
 			$pass = "adminpassword";
 			$table = "a1414431_sntd";
 			//$conn = mysqli_connect("localhost",$username,$pass,$pass);
-			$conn = mysqli_connect("localhost","root","","socialtutor");
+			$conn = mysqli_connect("localhost","root","","stdbv2");
 			if(!$conn)
 				die("Can't connect to server!");
 			return $conn;

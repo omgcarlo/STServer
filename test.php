@@ -66,6 +66,13 @@
         <input type = "text" name = "postId" >
         <button type = "submit">View comment</button>
     </form>
+    <form method="POST" action="comment.php">
+      <input type = "text" name = "action" placeholder = "postId" value = "new" hidden="hidden">
+        <input type = "text" name = "postId" placeholder = "postId" >
+        <input type = "text" name = "userId" placeholder = "ImongId" >
+        <input type = "text" name = "comment"  placeholder = "Comment">
+        <button type = "submit">Comment</button>
+    </form>
 ****************************Event********************************************************************
     <form method="POST" action="events.php?action=getEvent">
         <input type = "text" name = "edate" >
@@ -74,6 +81,11 @@
 ***************************ACTIVITY*******************************************************************
   <form method="POST" action="activity.php?action=getActivities">
       <input type = "text" name = "ownerId" >
-      <button type = "submit">Follow</button>
+      <button type = "submit">GET ACTIVITIES</button>
   </form>
+  ***************************ACTIVITY*******************************************************************
+    <form method="POST" action="notification.php?action=get">
+        <input type = "text" name = "ownerId" >
+        <button type = "submit">GET NOTIFICATION</button>
+    </form>
 </html>
