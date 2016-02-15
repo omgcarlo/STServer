@@ -1,12 +1,13 @@
 <?php
-
+$host= gethostname();
+$ip = gethostbyname($host);
 class dbs{
 		public function __construct(){}
 		public function connect()
 		{
-			$username = "a1414431_admin1";
-			$pass = "adminpassword";
-			$table = "a1414431_sntd";
+			//$username = "a1414431_admin1";
+			//$pass = "adminpassword";
+			//$table = "a1414431_sntd";
 			//$conn = mysqli_connect("localhost",$username,$pass,$pass);
 			$conn = mysqli_connect("localhost","root","","stdbv2");
 			if(!$conn)

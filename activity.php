@@ -41,7 +41,7 @@ if(isset($_GET['action'])){
     */
     if($action == 'getActivities'){
       $ownerId = $_POST['ownerId'];
-      $res = $obj->getActivities($ownerId);
+       $res = $obj->getActivities($ownerId);
       $output = array();
       include_once 'user.php';
       $user = new User();
@@ -71,8 +71,17 @@ if(isset($_GET['action'])){
                 $act['from_userId'] = $rowUser['schoolId'];
                 $act['from_username'] = $rowUser['username'];
                 $act['from_full_name'] = $rowUser['full_name'];
+                if($rowUser['pic_url'] == 'default/pictures/ppic.jpg'){
+                  $act['pic_url'] = 'http://'.$ip.
+                                      '/STFinal/res/'.'default/pictures/ppic.jpg';
+                }else{
+                  $act['pic_url'] = 'http://'.$ip.
+                                      '/STFinal/res/users/U_'.
+                                      md5($rowUser['schoolId']).'/profile'. '/'.$rowUser['pic_url'];
+                }
                 $act['activityId'] = $rowAct['activityId'];
                 $act['description'] = $desc;
+
                 $act['datetime'] = $post->getTimePast($rowAct['date']);
                 array_push($output,$act);
           }

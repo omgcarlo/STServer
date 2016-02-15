@@ -22,8 +22,10 @@ class User{
 	}
 
 	public function signup($schoolId,$username,$password,$birthdate,
-							$email,$programId,$full_name,$pic_url){
-		$sql = "INSERT INTO user(schoolId,username,password,birthdate,email,programId,full_name,pic_url) values('$schoolId','$username','$password','$birthdate','$email',$programId,'$full_name','$pic_url')";
+							           $email,$programId,$full_name,$pic_url){
+    $reg_date = date("Y-m-d")." ".date("h:i:s");
+		$sql = "INSERT INTO user(schoolId,username,password,birthdate,email,programId,full_name,pic_url,registered_date)
+            values('$schoolId','$username','$password','$birthdate','$email',$programId,'$full_name','$pic_url','$reg_date')";
 		return $sql;
 	}
 	public function selectUsers(){
@@ -58,6 +60,10 @@ class User{
 	public function updateStatus($userId){
 		$sql = "UPDATE user SET status = 'D' WHERE schoolId = '$userId' ";
 	}
+  public function updatePicUrl($file,$schoolId){
+    	$sql = "UPDATE user SET pic_url = '$file' WHERE schoolId = '$schoolId' ";
+      return mysqli_query($this->conn,$sql);
+  }
 	 public function addFollowing($imongId,$iyangId){
         $res = $this->getUserDetails($imongId);
         $rowUser = mysqli_fetch_array($res);
@@ -160,5 +166,6 @@ class User{
         }
         return false;
     }
+
 }
 ?>

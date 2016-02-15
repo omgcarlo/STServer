@@ -19,9 +19,16 @@ class Post{
         $this->conn = $dbs->connect();
 	}
     public function insertPost($description,$type,$ownerId,$tags){
-        $cdatet = date("Y-m-d")." ".date("h:i:s");
-        $sql = "INSERT INTO `post`(`description`, `type`, `ownerId`, `tags`,`CreatedDate`) VALUES ('$description','$type','$ownerId','$tags','$cdatet')";
-      //  die($sql);
+        $time=date("h:i:sa");
+        $cdatet = date("Y-m-d")." ".date("G:i", strtotime($time));
+        $temp = "";
+        for($i = 0; $i < strlen($description); $i++ ){
+          if($description[$i] == "'"){
+            $temp .= $description[$i] . "";
+          }
+          $temp .= $description[$i];
+        }
+        $sql = "INSERT INTO `post`(`description`, `type`, `ownerId`, `tags`,`CreatedDate`) VALUES ('$temp','$type','$ownerId','$tags','$cdatet')";
         return mysqli_query($this->conn,$sql);
     }
     public function getFeed($userId){
@@ -33,12 +40,27 @@ class Post{
         return mysqli_query($this->conn,$sql);
     }
     public function getCountPost($ownerId){
-        $sql = "SELECT count(*) as cpost from post where ownerId = $ownerId";
+        $sql = "SELECT count(*) as cpost from post where ownerId = '$ownerId'";
         return mysqli_query($this->conn,$sql);
+    }
+    public function upvote($userIds,$postId){
+      $sql = "UPDATE post SET upvotes = '$userIds' where postId = $postId";
+        //die($sql);
+        return mysqli_query($this->conn,$sql);
+    }
+    public function uploadFile($fileId,$description,$type,$ownerId){
+        $sql = "UPDATE post SET fileId = $fileId where description = '$description' AND type = '$type' and ownerId = '$ownerId'";
+        return mysqli_query($this->conn,$sql);
+    }
+    public function getCountUpvotes($postId){
+        $sql = "SELECT upvotes from post where postId = $postId";
+        $rowPost = mysqli_fetch_array(mysqli_query($this->conn,$sql));
+        $temp = explode(",",$rowPost['upvotes']);
+        return count($temp) - 1;
     }
     public function getTimePast($d){
         $finaltime = "";
-    		$current_date_time=date("Y-m-d h:i:s");
+    		$current_date_time=date("Y-m-d h:i:sa");
     		$now = new DateTime("$current_date_time");
     		$ref = new DateTime("$d");
     		$diff = $now->diff($ref);

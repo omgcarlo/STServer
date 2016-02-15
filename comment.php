@@ -55,7 +55,7 @@ else{
         $user = new User();
         $output = array();
         //die($user->getUserDetails($ownerId));
-
+        $ip = gethostbyname(gethostname());
         while($rowComment = mysqli_fetch_array($res)){
             $commentc = array();
             $commentc['postId'] = $rowComment['postId'];
@@ -75,6 +75,14 @@ else{
             $commentc['Name'] = $rowUser['full_name'];
             $commentc['Username'] = $rowUser['username'];
             $commentc['UserType'] = $rowUser['UserType'];
+            if($rowUser['pic_url'] == 'default/pictures/ppic.jpg'){
+              $commentc['pic_url'] = 'http://'.$ip.
+                                  '/STFinal/res/'.'default/pictures/ppic.jpg';
+            }else{
+              $commentc['pic_url'] = 'http://'.$ip.
+                                  '/STFinal/res/users/U_'.
+                                  md5($rowUser['schoolId']).'/profile'. '/'.$rowUser['pic_url'];
+            }
             array_push($output,$commentc);
         }
         echo json_encode(array('Comment' => $output),JSON_PRETTY_PRINT);

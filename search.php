@@ -3,7 +3,7 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
 header('Content-Type: application/json');
 include 'models/search.php';
-}
+
     /**
     *   This is for the search function
     *   Hence, functions should be using GET method
@@ -18,6 +18,7 @@ include 'models/search.php';
     $queries = $_GET['queries'];    // Values to be searched
     $action = $_GET['action'];      // To specify what to search
     $imongId = $_GET['imo'];        // USER WHO WANTS TO SEARCH
+      //  GET SERVER IP
     switch ($action) {
         case 'people':
             $res = $obj->searchPerson($queries,$imongId);
@@ -30,7 +31,14 @@ include 'models/search.php';
                         $userc = array();
                         $userc['full_name'] = $rowUser['full_name'];
                         $userc['schoolId']  = $rowUser['schoolId'];
-                        $userc['pic_url'] = $rowUser['pic_url'];
+                        if($rowUser['pic_url'] == 'default/pictures/ppic.jpg'){
+                          $userc['pic_url'] = 'http://'.$ip.
+                                              '/STFinal/res/'.'default/pictures/ppic.jpg';
+                        }else{
+                          $userc['pic_url'] = 'http://'.$ip.
+                                              '/STFinal/res/users/U_'.
+                                              md5($rowUser['schoolId']).'/profile'. '/'.$rowUser['pic_url'];
+                        }
                         $userc['UserType'] = $rowUser['UserType'];
                         $userc['username'] = $rowUser['username'];
                         $userc['isFollowed'] = $user->isFollowed($imongId,$rowUser['schoolId']);
@@ -75,6 +83,8 @@ include 'models/search.php';
             $res = $obj->searchTopics($lastword ,$slastword);
 
             if ($res) {
+                include_once 'models/post.php';
+                $post = new Post();
                     $output = array();
                     while ($rowPost = mysqli_fetch_array($res)) {
                         $postc = array();
@@ -82,6 +92,7 @@ include 'models/search.php';
                         $postc['type'] = $rowPost['type'];
                         $postc['tags'] = $rowPost['tags'];
                         $postc['postId'] = $rowPost['postId'];
+                        $postc['datetime'] = $post->getTimePast($rowPost['CreatedDate']);
                         if($rowPost['fileId'] != NULL ){
                              // KUNG NAAY FILE EDI KUHAON
                              $postc['fileId'] = $rowPost['fileId'];
@@ -100,11 +111,18 @@ include 'models/search.php';
                         $rowUser =mysqli_fetch_array($user->getUserDetails($rowPost['ownerId']));
                         $postc['full_name'] = $rowUser['full_name'];
                         $postc['schoolId']  = $rowUser['schoolId'];
-                        $postc['pic_url'] = $rowUser['pic_url'];
+                        if($rowUser['pic_url'] == 'default/pictures/ppic.jpg'){
+                          $postc['pic_url'] = 'http://'.$ip.
+                                              '/STFinal/res/'.$rowUser['pic_url'];
+                        }else{
+                          $postc['pic_url'] = 'http://'.$ip.
+                                              '/STFinal/res/users/U_'.
+                                              md5($rowUser['schoolId']).'/profile'. '/'.$rowUser['pic_url'];
+                        }
                         $postc['UserType'] = $rowUser['UserType'];
                         $postc['username'] = $rowUser['username'];
                         $postc['isFollowed'] = $user->isFollowed($imongId,$rowUser['schoolId']);
-
+                        $postc['isOwned'] = $rowUser['schoolId'] == $imongId;
                         array_push($output,$postc);
                     }
                         echo json_encode(array('Post' => $output),JSON_PRETTY_PRINT);

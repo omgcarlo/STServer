@@ -1,6 +1,7 @@
 <?php
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
+header('Content-Type: application/json');
 
 include 'models/user.php';
 $obj = new User();
@@ -15,6 +16,8 @@ if(isset($_GET['action'])){
 		$res =  mysqli_query($conn,$obj->login($username,$password));
 		//$res = mysqli_query($conn,$obj->login('121-122','jacalan'));
 		if($res){
+
+			$ip = gethostbyname(gethostname());
 			$row = mysqli_fetch_array($res);
 
 			if($row['schoolId'] != null){
@@ -26,17 +29,19 @@ if(isset($_GET['action'])){
 	            $userc["Success"] = true;
 	            $userc["Name"] = $row1['full_name'];
 	            $userc["Username"] = $row1['username'];
-                $userc["Bio"] = $row1['bio'];
+              $userc["Bio"] = $row1['bio'];
 	            $userc["SchoolId"] = $row1['schoolId'];
 	            $userc["Program"] = $row1['name'];
 	            $userc["College"] = $row1['CollegeName'];
-
-	            $output = json_encode(array('User' => $userc));
+							$userc['pic_url'] = 'http://'.$ip.
+							 										'/STFinal/res/users/U_'.
+																	md5($row1['schoolId']).'/profile'. '/'.$row1['pic_url'];
+	            $output = json_encode(array('User' => $userc),JSON_PRETTY_PRINT);
 
             }
             else{
             	$userc["Success"] = false;
-	            $output = json_encode(array('User' => $userc));
+	            $output = json_encode(array('User' => $userc),JSON_PRETTY_PRINT);
             }
              echo $output;
 		}
@@ -58,21 +63,39 @@ if(isset($_GET['action'])){
 		else{
 			$pic_url = "default/pictures/ppic.jpg";	//default pic
 		}
-		//echo $obj->signup($schoolId,$username,$password,$birthdate,$email,1,$full_name,$pic_url);
+
 		$res = mysqli_query($conn,$obj->signup($schoolId,$username,$password,$birthdate,$email,1,$full_name,$pic_url));
 		$userc = array();
 		if($res){
-			$rootDir = "../res/users/".$schoolId;
+			$rootDir = "../res/users/"."U_". md5($schoolId);
 			//	MAKE ROOT DIR
 			mkdir($rootDir);
 			//	PROFILE DIR
-			mkdir($rootDir."/profile");
-			//	FOR FILES FOLDER
-			mkdir($rootDir."/files");
-			//================= UPLOAD IMAGE ============
+			$profileDir = $rootDir."/profile";
+			mkdir($profileDir);
 
-			$userc["Success"] = true;
-		}
+			//	FOR FILES FOLDER
+			$fileDir = $rootDir."/files";
+			mkdir($fileDir);
+
+			//================= UPLOAD IMAGE ============
+			$target_path1 = $profileDir . "/";
+			$countFiles = new FilesystemIterator($target_path1, FilesystemIterator::SKIP_DOTS);
+			//echo iterator_count($countFiles);
+			// 	rename the file
+			$new_name = "P_". md5(iterator_count($countFiles)) . ".jpg" ;
+			$target_path1 = $target_path1 . $new_name;
+
+			if(move_uploaded_file($_FILES['uploaded_file']['tmp_name'], $target_path1)) {
+						$res = $obj->updatePicUrl($new_name,$schoolId);	//	UPDATE PIC URL
+						if ($res) {
+							  $userc["UploadSuccess"] = true;
+						} else{
+						    $userc["UploadSuccess"] = false;
+						}
+			}
+				$userc["Success"] = true;
+			}
 		else{
 			$userc["Success"] = false;
 		}
@@ -123,36 +146,53 @@ if(isset($_GET['action'])){
     }
       echo json_encode(array('Follow' => $output));
   }
+	// FOR PROFILE
   else if($action == "getUserCredentials"){
 
       $imongId = $_POST['imo'];
-      if(isset($_POST['iya'])){
+			$iyangId = null;
+      if(isset($_POST['iya']) && $_POST['iya'] != null){
         $iyangId = $_POST['iya'];
         $res = $obj->getUserDetails($iyangId);
       }
       else{
+
         $res = $obj->getUserDetails($imongId);
       }
-      $rowUser = mysqli_fetch_array($res);
-      $userd = array();
-      $userd['full_name'] = $rowUser['full_name'];
-      $userd['username'] = $rowUser['username'];
-      $userd['bio'] = $rowUser['bio'];
-      $followers = count(explode(",",$rowUser['followers']))-1;
-      $followings = count(explode(",",$rowUser['following_ids']))-1;
-      $userd['followers'] = $followers;
-      $userd['followings'] = $followings;
-      include_once 'post.php';
-      $post = new Post();
-      $rowPost = mysqli_fetch_array($post->getCountPost($userId));
-      $userd['posts'] = $rowPost['cpost'];
-      if($iyangId != null){
-        $userd['isFollowed'] =  $obj->isFollowed($imongId,$iyangId);
-      }
+			if($res){
+		      $rowUser = mysqli_fetch_array($res);
+		      $userd = array();
+		      $userd['full_name'] = $rowUser['full_name'];
+		      $userd['username'] = $rowUser['username'];
+		      $userd['bio'] = $rowUser['bio'];
+					if($rowUser['pic_url'] == 'default/pictures/ppic.jpg'){
+						$userd['pic_url'] = 'http://'.$ip.
+																'/STFinal/res/'.'default/pictures/ppic.jpg';
+					}else{
+						$userd['pic_url'] = 'http://'.$ip.
+																'/STFinal/res/users/U_'.
+																md5($rowUser['schoolId']).'/profile'. '/'.$rowUser['pic_url'];
+					}
+		      $followers = count(explode(",",$rowUser['followers']))-1;
+		      $followings = count(explode(",",$rowUser['following_ids']))-1;
+		      $userd['followers'] = $followers;
+		      $userd['followings'] = $followings;
 
-
-      echo json_encode(array("User" => $userId),JSON_PRETTY_PRINT);
+		      include_once 'post.php';
+		      $post = new Post();
+					$obj = new User();
+		      $rowPost = mysqli_fetch_array($post->getCountPost($imongId));
+		      $userd['posts'] = $rowPost['cpost'];
+		      if($iyangId != null){
+		        $userd['isFollowed'] =  $obj->isFollowed($imongId,$iyangId);
+		      }
+					else{
+						$userd['isFollowed'] = null;
+					}
+		      echo json_encode(array("User" => $userd),JSON_PRETTY_PRINT);
+		}
   }
+
 }
 
 

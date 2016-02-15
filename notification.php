@@ -1,8 +1,9 @@
 <?php
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
-
-include 'notification.php';
+header('Content-Type: application/json');
+ini_set('memory_limit', '128M');
+include_once 'models/notification.php';
 
 $obj = new Notification();
 if(isset($_GET['action'])){
@@ -25,7 +26,7 @@ if(isset($_GET['action'])){
           $output['from_username'] = $rowUser['username'];
           $output['from_userId'] =  $rowUser['schoolId'];
         }
-        echo json_encode(array("Notification" => $ouput),JSON_PRETTY_PRINT);
+        echo json_encode(array("Notification" => $output),JSON_PRETTY_PRINT);
     }
   }
   elseif ($action == 'update') {

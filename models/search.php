@@ -25,5 +25,5 @@ class Search{
         $sql = "Select * from post where tags like '%$params1%' OR description like '%$params1%' OR tags like '%$params2%' OR description like '%$params2%'";
         return mysqli_query($this->conn,$sql);
     }
-
+}
  ?>

@@ -28,6 +28,7 @@ class Notification{
     //  N = NEW
     $sql = "Select * from notification where to_userId = '$ownerId' and status = 'N'";
     return mysqli_query($this->conn,$sql);
+    //return $sql;
   }
   public function updateStatus($notificationId){
     //  R  = READ

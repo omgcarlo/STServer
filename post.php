@@ -17,6 +17,30 @@ if(isset($_POST['action'])){
         $res = $obj->insertPost($description,$type,$ownerId,$tags);
         $postJSON = array();
         if($res){
+					if(isset($_FILES['uploaded_file']) && !is_null($_FILES['uploaded_file']) && $_FILES['uploaded_file']['size'] != 0){
+							$rootDir = "../res/users/"."U_". md5($ownerId);
+							$fileDir = $rootDir."/files";
+							$target_path1 = $fileDir . "/";
+							//	count the files
+							$countFiles = new FilesystemIterator($target_path1, FilesystemIterator::SKIP_DOTS);
+							$extension = explode(".",basename( $_FILES['uploaded_file']['name']));
+							//echo $countFiles;
+							// 	rename the file
+							$new_name = "F_". md5(iterator_count($countFiles)) .".". $extension[1];
+							$target_path1 = $target_path1 . $new_name;
+							if(move_uploaded_file($_FILES['uploaded_file']['tmp_name'], $target_path1)) {
+										include_once 'models/file.php';
+										$file = new File();
+										$file->insertFile($new_name,$ownerId,$type,basename( $_FILES['uploaded_file']['name']));
+										$rowFile = mysqli_fetch_array($file->getFileId($new_name,$ownerId));
+										$res = $obj->uploadFile($rowFile['fileId'],$description,$type,$ownerId);	//	UPDATE PIC URL
+										if ($res) {
+												$postJSON["UploadSuccess"] = true;
+										} else{
+												$postJSON["UploadSuccess"] = false;
+										}
+							}
+					}
             $postJSON['Success'] = true;
         }
         else{
@@ -58,7 +82,7 @@ else{
             }
             // FINAL QUERY
             $fq = $flex_query.$q_ids.$sorting_q;
-           //echo $fq;
+           	//echo $fq;
             $res = mysqli_query($conn,$fq);
             if($res){
                 while($rowPost = mysqli_fetch_array($res)){
@@ -71,7 +95,25 @@ else{
                     $posti['username'] = $rowPost['username'];
                     $posti['full_name'] = $rowPost['full_name'];
                     $posti['userType'] = $rowPost['UserType'];
+										if($rowPost['pic_url'] == 'default/pictures/ppic.jpg'){
+											$posti['pic_url'] = 'http://'.$ip.
+																					'/STFinal/res/'.'default/pictures/ppic.jpg';
+										}else{
+											$posti['pic_url'] = 'http://'.$ip.
+																					'/STFinal/res/users/U_'.
+																					md5($rowPost['schoolId']).'/profile'. '/'.$rowPost['pic_url'];
+										}
+										if ($rowPost['fileId'] != "" || $rowPost['fileId'] != NULL ) {
+											include_once 'models/file.php';
+											$file = new File();
+											$rowFile = mysqli_fetch_array($file->getFile($rowPost['fileId']));
+											$posti['file_url'] = 'http://'.$ip.
+																					'/STFinal/res/users/U_'.
+																					md5($rowPost['schoolId']).'/files'. '/'.$rowFile['fileUrl'];
+										}
+
                     $posti['datetime'] = $post->getTimePast($rowPost['CreatedDate']);
+										$posti['isOwned'] = $rowPost['schoolId'] == $ownerId;
                     array_push($output,$posti);
                 }
                 echo json_encode(array('Post' => $output),JSON_PRETTY_PRINT);
@@ -97,10 +139,70 @@ else{
           $posti['full_name'] = $rowPost['full_name'];
           $posti['userType'] = $rowPost['UserType'];
           $posti['datetime'] = $obj->getTimePast($rowPost['CreatedDate']);
-
+					if($rowPost['pic_url'] == 'default/pictures/ppic.jpg'){
+						$posti['pic_url'] = 'http://'.$ip.
+																'/STFinal/res/'.$rowPost['pic_url'];
+					}else{
+						$posti['pic_url'] = 'http://'.$ip.
+																'/STFinal/res/users/U_'.
+																md5($rowPost['schoolId']).'/profile'. '/'.$rowPost['pic_url'];
+					}
           echo json_encode(array('Post' => $posti),JSON_PRETTY_PRINT);
       }
     }
+		elseif ($action == 'upvote') {
+				$postId = $_POST['postId'];
+				$userId = $_POST['ownerId'];
+				//die($postId ." ".$userId);
+				$upvotes = "";  //  INIT UPVOTE
+				//  THIS ALGORITHM IS SMART
+				$post = new Post();
+				$rowPost = mysqli_fetch_array($post->getPost($postId)); // GET POST DETAILS
+				//  check if NULL
+
+				if($rowPost['upvotes'] != NULL && $rowPost['upvotes'] != ""){
+					$temp = explode(",",$rowPost['upvotes']);
+					//  CHECK IF NI UPVOTE NA BA
+					$flag = false;
+
+					for($i = 0; $i < count($temp) -1; $i++){
+							if($temp[$i] == $userId){
+									$flag = true;
+									break;
+							}
+					}
+					if(!$flag){
+						//  APPEND NEW ID
+						$upvotes = $rowPost['upvotes'] . $userId . ",";
+					}
+					else{
+						//  if exist in upvote array
+						//  then unvote
+						if($rowPost['upvotes'] == NULL || count($temp) <= 1)
+							$upvotes = NULL;
+						else {
+							for($i = 0; $i < count($temp) -1; $i++){
+									if($temp[$i] == $userId){
+											continue;
+									}
+									$upvotes .= $temp[$i] . ",";
+									//echo $temp[$i] . " - " . $userId . " | ";
+							}
+						}
+					}
+				}
+				//echo $upvotes;
+				$res = $obj->upvote($upvotes,$postId);
+				$output = array();
+				if($res){
+					$output['Success'] = true;
+				}
+				else{
+					$output['Success'] = false;
+				}
+				echo json_encode(array('Post' => $output),JSON_PRETTY_PRINT);
+		}
+
 }
 
 

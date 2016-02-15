@@ -1,3 +1,7 @@
+<?php
+$test = "hello";
+echo $test[1];
+?>
 <html>
 *********************************LOGIN*************************************************************
     <form method="post" action="user.php?action=login">
@@ -10,7 +14,7 @@
       <form method="post" action="user.php?action=signup" enctype="multipart/form-data">
           <input type = "text" name = "action" value = "signup">
           <br>
-          <input type="file" name="fileToUpload" id="fileToUpload"><br/>
+          <input type="file" name="uploaded_file" id="uploaded_file"><br/>
           schoolId:<input type = "text" name = "schoolId"><br/>
         username:<input type = "text" name = "username"><br/>
         password:<input type = "text" name = "password"><br/>
@@ -22,8 +26,9 @@
         <button type = "submit">Sign Up</button>
     </form>
 *****************************POST*****************************************************************
-     <form method="POST" action="post.php">
+     <form method="POST" action="post.php" enctype="multipart/form-data">
         <input type = "text" name = "action" value = "new"><br>
+        <input type="file" name="uploaded_file" id="uploaded_file"><br/>
         ownerId:<input type = "text" name = "ownerId"><br/>
         description:<input type = "text" name = "description"><br/>
         tags:<input type = "text" name = "tags"><br/>
@@ -31,6 +36,11 @@
 
         <button type = "submit">Post</button>
     </form>
+    <form method="POST" action="post.php?action=upvote">
+      <input type = "text" name = "postId" placeholder="postId">
+      <input type = "text" name = "userId" placeholder="userId">
+      <button type = "submit">Upvote</button>
+</form>
 ****************************FEEDS******************************************************************
     <form method="POST" action="post.php?action=feed">
         <input type = "text" name = "ownerId" value = "121-122">
@@ -49,6 +59,12 @@
         <button type = "submit">Search</button>
     </form>
       </form>
+*************************PROFILE*******************************************************************
+<form method="POST" action="user.php?action=getUserCredentials">
+<input type = "text" name = "imo" >
+<input type = "text" name = "iya" >
+<button type = "submit">Profile</button>
+</form>
 *****************************FOLLOW*****************************************************************
         <form method="POST" action="user.php?action=addfollowing">
         <input type = "text" name = "imo" >
