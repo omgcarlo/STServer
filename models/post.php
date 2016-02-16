@@ -7,11 +7,6 @@ $conn = $dbs->connect();
     *   (c) INCC Group  2015-2016
     *   EARLY TRAPPING!
     */
-    if (mysqli_connect_errno($conn))
-    {
-       echo "Failed to connect to MySQL: " . mysqli_connect_error();
-    }
-
 class Post{
     private $conn;
 	public function __construct(){
@@ -22,6 +17,7 @@ class Post{
         $time=date("h:i:sa");
         $cdatet = date("Y-m-d")." ".date("G:i", strtotime($time));
         $temp = "";
+        //  para di mo error kung naay '
         for($i = 0; $i < strlen($description); $i++ ){
           if($description[$i] == "'"){
             $temp .= $description[$i] . "";
@@ -43,6 +39,11 @@ class Post{
         $sql = "SELECT count(*) as cpost from post where ownerId = '$ownerId'";
         return mysqli_query($this->conn,$sql);
     }
+    public function getPostId($description,$type,$ownerId){
+       $sql = "SELECT postId from post where description = '$description' AND type = '$type' and ownerId = '$ownerId'";
+       $rowPost = mysqli_fetch_array(mysqli_query($this->conn,$sql));
+       return $rowPost['postId'];
+    }
     public function upvote($userIds,$postId){
       $sql = "UPDATE post SET upvotes = '$userIds' where postId = $postId";
         //die($sql);
@@ -58,6 +59,7 @@ class Post{
         $temp = explode(",",$rowPost['upvotes']);
         return count($temp) - 1;
     }
+
     public function getTimePast($d){
         $finaltime = "";
     		$current_date_time=date("Y-m-d h:i:sa");

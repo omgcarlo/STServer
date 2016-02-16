@@ -1,11 +1,11 @@
 <?php
 	header('Access-Control-Allow-Origin: *');
 	header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
+	/**
+	*   (c) INCC Group  2015-2016
+	*/
 	$dbs = new dbs();
-	if (mysqli_connect_errno($conn))
-	{
-	   echo "Failed to connect to MySQL: " . mysqli_connect_error();
-	}
+
 	class File{
 		private $conn;
 		public function __construct(){

@@ -1,14 +1,9 @@
 <?php
 include_once 'dbs.php';
 $dbs = new dbs();
-
-$conn = $dbs->connect();
-
-
-if (mysqli_connect_errno($conn))
-{
-   echo "Failed to connect to MySQL: " . mysqli_connect_error();
-}
+/**
+*   (c) INCC Group  2015-2016
+*/
 
 class Notification{
 	private $conn;

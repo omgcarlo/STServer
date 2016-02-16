@@ -2,13 +2,11 @@
 include_once 'dbs.php';
 $dbs = new dbs();
 
-$conn = $dbs->connect();
 
+/**
+*   (c) INCC Group  2015-2016
+*/
 
-if (mysqli_connect_errno($conn))
-{
-   echo "Failed to connect to MySQL: " . mysqli_connect_error();
-}
 
 class Activity{
 	private $conn;
@@ -36,9 +34,16 @@ class Activity{
 		 while($row = mysqli_fetch_array($res)){
 		 	$fromIds .= " or from_id = ".$row['postId'];
 		 }
+		 //	ADD FROM
+		 $sql = "SELECT * FROM `mentions` where to_userId = '$ownerId'";
+		 $res = mysqli_query($this->conn,$sql);
+		 while($row = mysqli_fetch_array($res)){
+			 if($row['referenceTable'] == 'post')
+		 		$fromIds .= " or from_id = ".$row['referenceId'];
+		 }
 		$sql = "SELECT * from activity where from_id = '$ownerId'". $fromIds ." ORDER BY `activity`.`date` DESC";
 		return mysqli_query($this->conn,$sql);
-		//return $sql;
+		//die($sql);
 	}
 
 }

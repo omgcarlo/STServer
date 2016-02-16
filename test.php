@@ -1,7 +1,4 @@
-<?php
-$test = "hello";
-echo $test[1];
-?>
+
 <html>
 *********************************LOGIN*************************************************************
     <form method="post" action="user.php?action=login">
@@ -38,7 +35,7 @@ echo $test[1];
     </form>
     <form method="POST" action="post.php?action=upvote">
       <input type = "text" name = "postId" placeholder="postId">
-      <input type = "text" name = "userId" placeholder="userId">
+      <input type = "text" name = "ownerId" placeholder="userId">
       <button type = "submit">Upvote</button>
 </form>
 ****************************FEEDS******************************************************************
@@ -99,9 +96,14 @@ echo $test[1];
       <input type = "text" name = "ownerId" >
       <button type = "submit">GET ACTIVITIES</button>
   </form>
-  ***************************ACTIVITY*******************************************************************
+***************************ACTIVITY*******************************************************************
     <form method="POST" action="notification.php?action=get">
         <input type = "text" name = "ownerId" >
         <button type = "submit">GET NOTIFICATION</button>
     </form>
+*************************FOLLOWINGS****************************************************************
+<form method="POST" action="user.php?action=getFollowingPeople">
+    <input type = "text" name = "userId" >
+    <button type = "submit">GET FOLLOWINGS</button>
+</form>
 </html>

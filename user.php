@@ -193,6 +193,22 @@ if(isset($_GET['action'])){
 		}
   }
 
+	else if($action == 'getFollowingPeople'){
+			$userId = $_POST['userId'];
+			$rowOwner = mysqli_fetch_array($obj->getUserDetails($userId));
+			$userIds = explode(",",$rowOwner['following_ids']);
+			$output = array();
+			for($i = 0 ; $i < count($userIds) - 1; $i++){
+					$userc = array();
+					$rowUser = mysqli_fetch_array($obj->getUserDetails($userIds[$i]));
+					$userc['schoolId'] = $rowUser['schoolId'];
+					$userc['username'] = $rowUser['username'];
+					$userc['full_name'] = $rowUser['full_name'];
+					array_push($output,$userc);
+			}
+			echo json_encode(array("User" => $output),JSON_PRETTY_PRINT);
+	}
+
 }
 
 

@@ -40,11 +40,16 @@ class User{
 		$sql = "SELECT * FROM user JOIN program ON user.ProgramId = program.ProgramId, JOIN college ON program.CollegeCode = college.CollegeCode where user.Status = 'A' ";
 		return mysqli_query($this->conn,$sql);
 	}
-    public function getUserDetails($userId){
-        $sql = "Select * from user where schoolId = '$userId'";
-        return mysqli_query($this->conn,$sql);
-        //return $sql;
-    }
+  public function getUserDetails($userId){
+      $sql = "Select * from user where schoolId = '$userId'";
+      return mysqli_query($this->conn,$sql);
+      //return $sql;
+  }
+  public function getUserId($username){
+    //  Username is unique
+    $sql = "SELECT schoolId from user where username = '$username'";
+    return mysqli_query($this->conn,$sql);
+  }
 	public function userDetails($userId){
 		$sql = "SELECT * FROM user JOIN program ON user.programId = program.programId JOIN college ON program.CollegeCode = college.CollegeCode where user.status = 'A' AND user.schoolId = '$userId'";
     return mysqli_query($this->conn,$sql);

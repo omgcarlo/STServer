@@ -41,7 +41,7 @@ if(isset($_GET['action'])){
     */
     if($action == 'getActivities'){
       $ownerId = $_POST['ownerId'];
-       $res = $obj->getActivities($ownerId);
+      $res = $obj->getActivities($ownerId);
       $output = array();
       include_once 'user.php';
       $user = new User();
@@ -50,16 +50,19 @@ if(isset($_GET['action'])){
       if($res){
           while($rowAct = mysqli_fetch_array($res)){
                 $act = array();
-
+                $rowUser = mysqli_fetch_array($user->getUserDetails($rowAct['ownerId']));
                 if($rowAct['act_description'] == 'followed'){
-                  $rowUser = mysqli_fetch_array($user->getUserDetails($rowAct['ownerId']));
                   $act['Activity'] = "follow";
                   $desc = "followed you";
+                }
+                else if($rowAct['act_description'] == 'tagged'){
+                  $act['Activity'] = "mention";
+                  $desc = "mentioned you";
                 }
                 else{
                   //$rowPost = mysqli_fetch_array($post->getPost($rowAct['from_id']));
                   //die($user->getUserDetails($rowPost['ownerId']));
-                  $rowUser = mysqli_fetch_array($user->getUserDetails($rowAct['ownerId']));
+
                   $act['Activity'] = "comment";
                   $desc = "commented on your post";
                   $act['postId'] = $rowAct['from_id'];

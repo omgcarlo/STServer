@@ -13,6 +13,7 @@ if(isset($_POST['action'])){
         $type = $_POST['type'];
         $ownerId = $_POST['ownerId'];
         $tags = $_POST['tags'];
+
         //echo $obj->insertPost($description,$type,$ownerId,$tags);
         $res = $obj->insertPost($description,$type,$ownerId,$tags);
         $postJSON = array();
@@ -40,6 +41,33 @@ if(isset($_POST['action'])){
 												$postJSON["UploadSuccess"] = false;
 										}
 							}
+					}
+					//	INSERT MENTIONS
+					include_once 'models/mention.php';
+					$mention = new Mention();
+					include_once 'models/user.php';
+					$user = new User();
+					$usernames = $mention->extractUsers($description);	//	extract
+					for($i = 0 ; $i < count($usernames) -1 ; $i++){
+
+						if($usernames[$i] != ""){
+								//echo $usernames[$i] . " " . $i;
+								$rowUser = mysqli_fetch_array($user->getUserId($usernames[$i]));
+								$postId = $obj->getPostId($description,$type,$ownerId);
+								$mention->insertMention($ownerId,"post",$postId,$rowUser['schoolId']);
+								//  ADD ACTIVITY
+								include_once 'models/activity.php';
+								$act = new Activity();
+								$desc = "tagged";
+								$act->insertActivity($ownerId,$desc,$postId);
+								//  ADD NOTIFICATION
+								include_once 'models/notification.php';
+								$notif = new Notification();
+								$post = new Post();
+								$rowPost = mysqli_fetch_array($post->getPost($postId));
+								$notif->insertNotification($rowUser['schoolId'],"post","tagged",$postId,$ownerId);
+						}
+
 					}
             $postJSON['Success'] = true;
         }
@@ -159,8 +187,8 @@ else{
 				$post = new Post();
 				$rowPost = mysqli_fetch_array($post->getPost($postId)); // GET POST DETAILS
 				//  check if NULL
-
-				if($rowPost['upvotes'] != NULL && $rowPost['upvotes'] != ""){
+				//die($rowPost['upvotes']);
+				if($rowPost['upvotes'] != NULL || $rowPost['upvotes'] != "" || $rowPost['upvotes'] != null){
 					$temp = explode(",",$rowPost['upvotes']);
 					//  CHECK IF NI UPVOTE NA BA
 					$flag = false;
@@ -190,6 +218,9 @@ else{
 							}
 						}
 					}
+				}
+				else{
+					$upvotes = $userId . ",";
 				}
 				//echo $upvotes;
 				$res = $obj->upvote($upvotes,$postId);

@@ -1,6 +1,12 @@
 <?php
 $host= gethostname();
 $ip = gethostbyname($host);
+/**
+*   (c) INCC Group  2015-2016
+*		coded by Carlo Jacalan
+*		for socialngatutor mobile app
+*		contact: carlojacalan1@gmail.com
+*/
 class dbs{
 		public function __construct(){}
 		public function connect()
