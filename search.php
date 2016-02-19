@@ -121,6 +121,7 @@ include 'models/search.php';
                         }
                         $postc['UserType'] = $rowUser['UserType'];
                         $postc['username'] = $rowUser['username'];
+
                         $postc['isFollowed'] = $user->isFollowed($imongId,$rowUser['schoolId']);
                         $postc['isOwned'] = $rowUser['schoolId'] == $imongId;
                         array_push($output,$postc);
@@ -128,6 +129,8 @@ include 'models/search.php';
                         echo json_encode(array('Post' => $output),JSON_PRETTY_PRINT);
                 }
             break;
+        case 'discover':
+              
         default:
             # code...
             break;

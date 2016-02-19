@@ -151,12 +151,14 @@ if(isset($_GET['action'])){
 
       $imongId = $_POST['imo'];
 			$iyangId = null;
+			$whatId;
       if(isset($_POST['iya']) && $_POST['iya'] != null){
         $iyangId = $_POST['iya'];
         $res = $obj->getUserDetails($iyangId);
+				$whatId = $iyangId;
       }
       else{
-
+				$whatId = $imongId;
         $res = $obj->getUserDetails($imongId);
       }
 			if($res){
@@ -181,8 +183,9 @@ if(isset($_GET['action'])){
 		      include_once 'post.php';
 		      $post = new Post();
 					$obj = new User();
-		      $rowPost = mysqli_fetch_array($post->getCountPost($imongId));
+		      $rowPost = mysqli_fetch_array($post->getCountPost($whatId));;
 		      $userd['posts'] = $rowPost['cpost'];
+					$userd['userType'] = $rowUser['UserType'];
 		      if($iyangId != null){
 		        $userd['isFollowed'] =  $obj->isFollowed($imongId,$iyangId);
 		      }
@@ -204,6 +207,14 @@ if(isset($_GET['action'])){
 					$userc['schoolId'] = $rowUser['schoolId'];
 					$userc['username'] = $rowUser['username'];
 					$userc['full_name'] = $rowUser['full_name'];
+					if($rowUser['pic_url'] == 'default/pictures/ppic.jpg'){
+						$userc['pic_url'] = 'http://'.$ip.
+																'/STFinal/res/'.'default/pictures/ppic.jpg';
+					}else{
+						$userd['pic_url'] = 'http://'.$ip.
+																'/STFinal/res/users/U_'.
+																md5($rowUser['schoolId']).'/profile'. '/'.$rowUser['pic_url'];
+					}
 					array_push($output,$userc);
 			}
 			echo json_encode(array("User" => $output),JSON_PRETTY_PRINT);

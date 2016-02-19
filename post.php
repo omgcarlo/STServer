@@ -89,9 +89,10 @@ else{
         *   select all post from following(User)
         *   following contains array of userIds
         */
-        include_once 'user.php';
+        include_once 'models/user.php';
         $user = new User();
-        //die($user->getUserDetails($ownerId));
+        include_once 'models/comment.php';
+				$comment = new Comment();
         $post = new Post();
         $res = $user->getUserDetails($ownerId);
         if($res){
@@ -117,6 +118,7 @@ else{
                     $posti = array();
                     $posti['postId'] = $rowPost['postId'];
                     $posti['description'] = $rowPost['description'];
+										if($rowPost['description'] )
                     $posti['ownerId'] = $rowPost['ownerId'];
                     $posti['tags'] = $rowPost['tags'];
                     $posti['schoolId'] = $rowPost['schoolId'];
@@ -142,6 +144,11 @@ else{
 
                     $posti['datetime'] = $post->getTimePast($rowPost['CreatedDate']);
 										$posti['isOwned'] = $rowPost['schoolId'] == $ownerId;
+										$posti['isUpvoted'] = $post->isUpvoted($ownerId,$rowPost['upvotes']);
+										$posti['isShared'] = $post->isShared($ownerId,$rowPost['postId']);
+										$posti['upvotes'] = $post->countUpVotes($rowPost['postId']);
+										$posti['shares'] = $post->countShares($rowPost['postId']);
+										$posti['comments'] = $comment->countComments($rowPost['postId']);
                     array_push($output,$posti);
                 }
                 echo json_encode(array('Post' => $output),JSON_PRETTY_PRINT);
@@ -151,7 +158,9 @@ else{
     elseif ($action == "getPost") {
       //  POST ID
       $postId = $_POST['postId'];
-
+			$ownerId = $_POST['ownerId'];
+			include_once 'models/comment.php';
+			$comment = new Comment();
       $res = $obj->getPost($postId);
 
       $posti = array();
@@ -167,6 +176,12 @@ else{
           $posti['full_name'] = $rowPost['full_name'];
           $posti['userType'] = $rowPost['UserType'];
           $posti['datetime'] = $obj->getTimePast($rowPost['CreatedDate']);
+					$posti['isOwned'] = $rowPost['schoolId'] == $ownerId;
+					$posti['isUpvoted'] = $obj->isUpvoted($ownerId,$rowPost['upvotes']);
+					$posti['isShared'] = $obj->isShared($ownerId,$rowPost['postId']);
+					$posti['upvotes'] = $obj->countUpVotes($rowPost['postId']);
+					$posti['shares'] = $obj->countShares($rowPost['postId']);
+					$posti['comments'] = $comment->countComments($rowPost['postId']);
 					if($rowPost['pic_url'] == 'default/pictures/ppic.jpg'){
 						$posti['pic_url'] = 'http://'.$ip.
 																'/STFinal/res/'.$rowPost['pic_url'];
@@ -232,6 +247,23 @@ else{
 					$output['Success'] = false;
 				}
 				echo json_encode(array('Post' => $output),JSON_PRETTY_PRINT);
+		}
+		else if($action == 'share'){
+				$description = "share:". $_POST['postId'] . ":" .$_POST['description'] ;
+				$type = $_POST['type'];
+				$ownerId = $_POST['ownerId'];
+				$tags = $_POST['tags'];
+
+				//echo $obj->insertPost($description,$type,$ownerId,$tags);
+				$res = $obj->insertPost($description,$type,$ownerId,$tags);
+				$postJSON = array();
+				if($res){
+					$postJSON['Success'] = true;
+				}
+				else{
+					$postJSON['Success'] = false;
+				}
+				echo json_encode(array("Post" => $postJSON),JSON_PRETTY_PRINT);
 		}
 
 }

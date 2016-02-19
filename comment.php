@@ -53,9 +53,11 @@ else{
         */
         include_once 'user.php';
         $user = new User();
+        include_once 'post.php';
+        $post = new Post();
         $output = array();
+
         //die($user->getUserDetails($ownerId));
-        $ip = gethostbyname(gethostname());
         while($rowComment = mysqli_fetch_array($res)){
             $commentc = array();
             $commentc['postId'] = $rowComment['postId'];
@@ -68,7 +70,7 @@ else{
             }
 
             $commentc['status'] = $rowComment['status'];
-
+            $commentc['datetime'] =$post->getTimePast($rowComment['datetime']);
             $rowUser = mysqli_fetch_array($user->getUserDetails($rowComment['userId']));
 
             $commentc['schoolId'] = $rowUser['schoolId'];

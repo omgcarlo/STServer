@@ -30,7 +30,6 @@
         description:<input type = "text" name = "description"><br/>
         tags:<input type = "text" name = "tags"><br/>
         type:<input type = "text" name = "type"><br/>
-
         <button type = "submit">Post</button>
     </form>
     <form method="POST" action="post.php?action=upvote">
@@ -44,7 +43,8 @@
         <button type = "submit">Feed</button>
     </form>
     <form method="POST" action="post.php?action=getPost">
-        <input type = "text" name = "postId" value = "">
+        <input type = "text" name = "postId" value = "" placeholder="postId">
+        <input type = "text" name = "ownerId" value = "121-122" placeholder="ownerId">
         <button type = "submit">GET POST</button>
     </form>
 
@@ -103,7 +103,19 @@
     </form>
 *************************FOLLOWINGS****************************************************************
 <form method="POST" action="user.php?action=getFollowingPeople">
-    <input type = "text" name = "userId" >
-    <button type = "submit">GET FOLLOWINGS</button>
+  <input type = "text" name = "userId" >
+  <button type = "submit">GET FOLLOWINGS</button>
+
 </form>
+*************************Report****************************************************************
+<form method="POST" action="report.php?action=insert">
+  <input type = "text" name = "reporterId" placeholder="reporterId">
+  <input type = "text" name = "referenceId" placeholder="post/comment id">
+  <select name = "referenceTable">
+    <option value="post">Post</option>
+    <option value="comment">Comment</option>
+  </select>
+  <button type = "submit">Report</button>
+</form>
+
 </html>

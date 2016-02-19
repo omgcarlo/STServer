@@ -59,7 +59,12 @@ class Post{
         $temp = explode(",",$rowPost['upvotes']);
         return count($temp) - 1;
     }
+    public function extractNestedPost($description){
+      //  Get postId hidden in description
+      //	convert string to array
+      $postId = preg_match("/share:(.*?):/", $description, $display);
 
+    }
     public function getTimePast($d){
         $finaltime = "";
     		$current_date_time=date("Y-m-d h:i:sa");
@@ -80,6 +85,41 @@ class Post{
     			$finaltime .= $diff->s."s";
     		}
         return $finaltime;
+    }
+    public function isUpvoted($imongId,$iyangId){
+      $ids = explode(",",$iyangId);
+      $flag = false;
+      //  TRAVERSE TO CHECK
+      for($i = 0; $i < count($ids) - 1;$i++){
+          if($ids[$i] == $imongId){
+              $flag = true;
+              break;
+          }
+      }
+      return $flag;
+    }
+    public function isShared($imongId,$postId){
+      $row = mysqli_fetch_array($this->getPost($postId));
+      $flag = false;
+      $ids = explode(",",$row['shares']);
+      for($i = 0; $i < count($ids) - 1; $i++){
+        if($ids[$i] == $imongId){
+          $flag = true;
+          break;
+        }
+      }
+      return $flag;
+    }
+
+    public function countShares($postId){
+      $row = mysqli_fetch_array($this->getPost($postId));
+      $ids = explode(",",$row['shares']);
+      return (count($ids)-1);
+    }
+    public function countUpVotes($postId){
+      $row = mysqli_fetch_array($this->getPost($postId));
+      $ids = explode(",",$row['upvotes']);
+      return (count($ids)-1);
     }
 }
 

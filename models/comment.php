@@ -27,9 +27,20 @@ class Comment{
       $sql = "SELECT * from comment where postId = '$postId'";
       return mysqli_query($this->conn,$sql);
     }
+    public function selectComment($commentId){
+      $sql = "SELECT * FROM comment JOIN user ON user.schoolID = comment.userId WHERE commentId = $commentId ";
+      return mysqli_query($this->conn,$sql);
+    }
     public function approvedComment($commentId){
         $sql = "UPDATE comment SET isApproved = 1 where commentId = $commentId ";
         return mysqli_query($this->conn,$sql);
+    }
+    public function countComments($postId){
+      $sql = "SELECT count(*) as ctr from comment where postId = $postId";
+      $res = mysqli_query($this->conn,$sql);
+      $row = mysqli_fetch_array($res);
+      return $row['ctr'];
+
     }
 
 }
