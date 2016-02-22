@@ -15,12 +15,11 @@ include 'models/search.php';
     die('wara');
  }
  if(isset($_GET['queries'])){
-    $queries = $_GET['queries'];    // Values to be searched
-    $action = $_GET['action'];      // To specify what to search
-    $imongId = $_GET['imo'];        // USER WHO WANTS TO SEARCH
-      //  GET SERVER IP
+   $action = $_GET['action'];    // To specify what to search
     switch ($action) {
         case 'people':
+        $queries = $_GET['queries'];    // Values to be searched
+        $imongId = $_GET['imo'];        // USER WHO WANTS TO SEARCH
             $res = $obj->searchPerson($queries,$imongId);
                if ($res) {
                     include_once 'user.php';
@@ -42,6 +41,7 @@ include 'models/search.php';
                         $userc['UserType'] = $rowUser['UserType'];
                         $userc['username'] = $rowUser['username'];
                         $userc['isFollowed'] = $user->isFollowed($imongId,$rowUser['schoolId']);
+
                         //  GET COUNT FOR FOLLOWING
                         if($rowUser['following_ids'] == NULL){
                           $following = 0;
@@ -71,6 +71,9 @@ include 'models/search.php';
             *     GETTING THE LAST 2 WORDS
             *     PUT IT TO QUERY
             */
+            $queries = $_GET['queries'];    // Values to be searched
+            $imongId = $_GET['imo'];        // USER WHO WANTS TO SEARCH
+
             $q = explode(" ",$queries);
             $lastword = $q[(count($q)-1)];
             if((count($q)-2) < 0 ){
@@ -85,6 +88,12 @@ include 'models/search.php';
             if ($res) {
                 include_once 'models/post.php';
                 $post = new Post();
+                include_once 'user.php';
+                $user = new User();
+                include_once 'models/file.php';
+                $file = new File();
+                include_once 'models/comment.php';
+                $comment = new Comment();
                     $output = array();
                     while ($rowPost = mysqli_fetch_array($res)) {
                         $postc = array();
@@ -92,23 +101,25 @@ include 'models/search.php';
                         $postc['type'] = $rowPost['type'];
                         $postc['tags'] = $rowPost['tags'];
                         $postc['postId'] = $rowPost['postId'];
-                        $postc['datetime'] = $post->getTimePast($rowPost['CreatedDate']);
+
+                        $rowUser = mysqli_fetch_array($user->getUserDetails($rowPost['ownerId']));
                         if($rowPost['fileId'] != NULL ){
                              // KUNG NAAY FILE EDI KUHAON
                              $postc['fileId'] = $rowPost['fileId'];
-                             include_once 'file.php';
+                             include_once 'models/file.php';
                              $obj = new File();
-                             $resFile = $obj->getFile($rowPost['fileId']);
-                             $rowFile = mysqli_fetch_array($resFile);
-                             $postc['fileUrl'] = $rowFile['fileUrl'];
-                             $postc['fdescription'] = $rowFile['fdescription'];
+         											$rowFile = mysqli_fetch_array($file->getFile($rowPost['fileId']));
+         											$postc['file_description'] = $rowFile['description'];
+         											$postc['file_url'] = 'http://'.$ip.
+         																					'/STFinal/res/users/U_'.
+         																					md5($rowUser['schoolId']).'/files'. '/'.$rowFile['fileUrl'];
 
-                        }
-                        // CALL TO USER CLASS
-                        include_once 'user.php';
-                        $user = new User();
+                        }	else {
+                            $postc['file_url'] = "nofile";
+                            $postc['file_description'] = "nofile";
+                          }
+                        // get user details
 
-                        $rowUser =mysqli_fetch_array($user->getUserDetails($rowPost['ownerId']));
                         $postc['full_name'] = $rowUser['full_name'];
                         $postc['schoolId']  = $rowUser['schoolId'];
                         if($rowUser['pic_url'] == 'default/pictures/ppic.jpg'){
@@ -124,20 +135,113 @@ include 'models/search.php';
 
                         $postc['isFollowed'] = $user->isFollowed($imongId,$rowUser['schoolId']);
                         $postc['isOwned'] = $rowUser['schoolId'] == $imongId;
+
+                        $postc['datetime'] = $post->getTimePast($rowPost['CreatedDate']);
+    										$postc['isOwned'] = $rowUser['schoolId'] == $imongId;
+    										$postc['isUpvoted'] = $post->isUpvoted($imongId,$rowPost['upvotes']);
+    										$postc['isShared'] = $post->isShared($imongId,$rowPost['postId']);
+    										$postc['upvotes'] = $post->countUpVotes($rowPost['postId']);
+    										$postc['shares'] = $post->countShares($rowPost['postId']);
+    										$postc['comments'] = $comment->countComments($rowPost['postId']);
                         array_push($output,$postc);
                     }
                         echo json_encode(array('Post' => $output),JSON_PRETTY_PRINT);
                 }
             break;
-        case 'discover':
-              
+        case 'discoverNotes':
+                include_once 'models/college.php';
+                $college = new College();
+                include_once 'models/post.php';
+                $post = new Post();
+                include_once 'models/user.php';
+                $user = new User();
+
+                $squeries = $_GET['queries'];
+                $cno = $_GET['courseNo']; // COURSE NO.
+                $res = $obj->discoverNotes($squeries,$cno);
+                $output = array();
+                while($rowSearch = mysqli_fetch_array($res)){
+                  $discover = array();
+                  $discover['Type'] = "Note";
+                  $discover['ownerId'] = $rowSearch['OwnerId'];
+                  $rowUser = mysqli_fetch_array($user->getUserDetails($rowSearch['OwnerId']));
+                  $discover['full_name'] = $rowUser['full_name'];
+                  $discover['note_description'] = $rowSearch['Description'];
+                  $discover['file_description'] = $rowSearch['description'];
+                  $discover['datetime'] = $post->getTimePast($rowSearch['CreatedDate']);
+                  //  get course details
+                  $course = $college->getCollegeCodeFromCourse($rowSearch['CourseId']);
+                  $discover['fileUrl'] = "http://".$ip."/STFinal/res/notes/C_".$course['CollegeCode']."/".$course['courseNo']."/".$rowSearch['fileUrl'];
+                  array_push($output,$discover);
+                }
+                echo json_encode(array('Discover' => $output),JSON_PRETTY_PRINT);
+            break;
+        case 'discoverTopics':
+              include_once 'models/college.php';
+              $college = new College();
+              include_once 'models/post.php';
+              $post = new Post();
+              include_once 'models/comment.php';
+              $comment = new Comment();
+              $squeries = $_GET['queries'];
+              $ownerId = $_GET['imo'];
+              $cno = $_GET['courseNo']; // COURSE NO.
+              $res = $obj->discoverTopics($squeries,$cno);
+              $output = array();
+              while($rowPost = mysqli_fetch_array($res)){
+                  $posti = array();
+                  $posti['postId'] = $rowPost['postId'];
+                  $posti['description'] = $rowPost['description'];
+                  if($rowPost['description'] )
+                  $posti['ownerId'] = $rowPost['ownerId'];
+                  $posti['tags'] = $rowPost['tags'];
+                  $posti['schoolId'] = $rowPost['schoolId'];
+                  $posti['username'] = $rowPost['username'];
+                  $posti['full_name'] = $rowPost['full_name'];
+                  $posti['userType'] = $rowPost['UserType'];
+                  if($rowPost['pic_url'] == 'default/pictures/ppic.jpg'){
+                    $posti['pic_url'] = 'http://'.$ip.
+                                        '/STFinal/res/'.'default/pictures/ppic.jpg';
+                  }else{
+                    $posti['pic_url'] = 'http://'.$ip.
+                                        '/STFinal/res/users/U_'.
+                                        md5($rowPost['schoolId']).'/profile'. '/'.$rowPost['pic_url'];
+                  }
+                  if ($rowPost['fileId'] != "" || $rowPost['fileId'] != NULL ) {
+                    include_once 'models/file.php';
+                    $file = new File();
+                    $rowFile = mysqli_fetch_array($file->getFile($rowPost['fileId']));
+                    $posti['file_description'] = $rowFile['description'];
+                    $posti['file_url'] = 'http://'.$ip.
+                                        '/STFinal/res/users/U_'.
+                                        md5($rowPost['schoolId']).'/files'. '/'.$rowFile['fileUrl'];
+                  }
+                  else{
+                    $posti['file_url'] = "nofile";
+                    $posti['file_description'] = "nofile";
+                  }
+
+                  $posti['datetime'] = $post->getTimePast($rowPost['CreatedDate']);
+                  $posti['isOwned'] = $rowPost['schoolId'] == $ownerId;
+                  $posti['isUpvoted'] = $post->isUpvoted($ownerId,$rowPost['upvotes']);
+                  $posti['isShared'] = $post->isShared($ownerId,$rowPost['postId']);
+                  $posti['upvotes'] = $post->countUpVotes($rowPost['postId']);
+                  $posti['shares'] = $post->countShares($rowPost['postId']);
+                  $posti['comments'] = $comment->countComments($rowPost['postId']);
+                  array_push($output,$posti);
+              }
+              echo json_encode(array('Discover' => $output),JSON_PRETTY_PRINT);
         default:
             # code...
             break;
+          }
+    }
+    else{
+      $action = $_GET['action'];
+
     }
 
 
- }
 
 
 ?>

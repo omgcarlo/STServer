@@ -1,6 +1,7 @@
 <?php
 	header('Access-Control-Allow-Origin: *');
 	header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
+	
 	/**
 	*   (c) INCC Group  2015-2016
 	*/
@@ -21,7 +22,8 @@
 			return $sql;
 		}
 		public function insertFile($fileUrl,$ownerId,$type,$description){
-			$sql = "INSERT INTO file(fileUrl,ownerId,type,description) VALUES('$fileUrl','$ownerId','$type','$description')";
+
+			$sql = "INSERT INTO file(fileUrl,ownerId,type,description,status) VALUES('$fileUrl','$ownerId','$type','$description','A')";
 			return mysqli_query($this->conn,$sql);
 		}
 		public function deleteFile($fileId){

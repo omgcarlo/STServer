@@ -3,6 +3,9 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
 header('Content-Type: application/json');
 
+ini_set('upload_max_size' , '32M');
+ini_set('post_max_size', '32M');
+
 include 'models/post.php';
 $obj = new Post();
 if(isset($_POST['action'])){
@@ -16,6 +19,7 @@ if(isset($_POST['action'])){
 
         //echo $obj->insertPost($description,$type,$ownerId,$tags);
         $res = $obj->insertPost($description,$type,$ownerId,$tags);
+				$postId = $obj->getPostId($description,$type,$ownerId);
         $postJSON = array();
         if($res){
 					if(isset($_FILES['uploaded_file']) && !is_null($_FILES['uploaded_file']) && $_FILES['uploaded_file']['size'] != 0){
@@ -39,7 +43,13 @@ if(isset($_POST['action'])){
 												$postJSON["UploadSuccess"] = true;
 										} else{
 												$postJSON["UploadSuccess"] = false;
+												$obj->deletePost($postId);
 										}
+							}
+							else{
+								$postJSON["UploadSuccess"] = false;
+								$obj->deletePost($postId);
+								echo "postDEleted";
 							}
 					}
 					//	INSERT MENTIONS
@@ -53,7 +63,6 @@ if(isset($_POST['action'])){
 						if($usernames[$i] != ""){
 								//echo $usernames[$i] . " " . $i;
 								$rowUser = mysqli_fetch_array($user->getUserId($usernames[$i]));
-								$postId = $obj->getPostId($description,$type,$ownerId);
 								$mention->insertMention($ownerId,"post",$postId,$rowUser['schoolId']);
 								//  ADD ACTIVITY
 								include_once 'models/activity.php';
@@ -103,11 +112,11 @@ else{
             $output = array();
             //die($ids[0]);
             //  FLEXIBLE QUERY
-            $flex_query = "SELECT * FROM `post` Join user On post.ownerId = user.schoolId where post.ownerId = ";
+            $flex_query = "SELECT * FROM `post` Join user On post.ownerId = user.schoolId where post.status = 'A' AND post.ownerId = ";
             $sorting_q = " ORDER BY `CreatedDate` DESC";
             $q_ids =  "'$ownerId'";
             for($i = 0; $i < count($ids)-1; $i++){  //  -1 kay comma separated man
-                $q_ids .= " OR post.ownerId = '$ids[$i]'";
+                $q_ids .= " OR post.status = 'A' AND post.ownerId = '$ids[$i]'";
             }
             // FINAL QUERY
             $fq = $flex_query.$q_ids.$sorting_q;
@@ -137,9 +146,14 @@ else{
 											include_once 'models/file.php';
 											$file = new File();
 											$rowFile = mysqli_fetch_array($file->getFile($rowPost['fileId']));
+											$posti['file_description'] = $rowFile['description'];
 											$posti['file_url'] = 'http://'.$ip.
 																					'/STFinal/res/users/U_'.
 																					md5($rowPost['schoolId']).'/files'. '/'.$rowFile['fileUrl'];
+										}
+										else{
+											$posti['file_url'] = "nofile";
+											$posti['file_description'] = "nofile";
 										}
 
                     $posti['datetime'] = $post->getTimePast($rowPost['CreatedDate']);
@@ -264,6 +278,44 @@ else{
 					$postJSON['Success'] = false;
 				}
 				echo json_encode(array("Post" => $postJSON),JSON_PRETTY_PRINT);
+		}
+		else if($action == 'upload_file'){
+				$description = $_GET['description'];
+				$type = $_GET['type'];
+				$ownerId = $_GET['ownerId'];
+				$tags = $_GET['tags'];
+
+				$postId = $obj->getPostId($description,$type,$ownerId);
+				if(isset($_FILES['uploaded_file']) && !is_null($_FILES['uploaded_file']) && $_FILES['uploaded_file']['size'] != 0){
+						$rootDir = "../res/users/"."U_". md5($ownerId);
+						$fileDir = $rootDir."/files";
+						$target_path1 = $fileDir . "/";
+						//	count the files
+						$countFiles = new FilesystemIterator($target_path1, FilesystemIterator::SKIP_DOTS);
+						$extension = explode(".",basename( $_FILES['uploaded_file']['name']));
+						//echo $countFiles;
+						// 	rename the file
+						$new_name = "F_". md5(iterator_count($countFiles)) .".". $extension[1];
+						$target_path1 = $target_path1 . $new_name;
+						if(move_uploaded_file($_FILES['uploaded_file']['tmp_name'], $target_path1)) {
+									include_once 'models/file.php';
+									$file = new File();
+									$file->insertFile($new_name,$ownerId,$type,basename($_FILES['uploaded_file']['name']));
+									$rowFile = mysqli_fetch_array($file->getFileId($new_name,$ownerId));
+									$res = $obj->uploadFile($rowFile['fileId'],$description,$type,$ownerId);	//	UPDATE PIC URL
+									if ($res) {
+											$postJSON["UploadSuccess"] = true;
+									} else{
+											$postJSON["UploadSuccess"] = false;
+											$obj->deletePost($postId);
+									}
+						}
+						else{
+							$postJSON["UploadSuccess"] = false;
+							$obj->deletePost($postId);
+							//echo "postDEleted";
+						}
+				}
 		}
 
 }

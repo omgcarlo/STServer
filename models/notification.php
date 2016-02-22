@@ -1,6 +1,6 @@
 <?php
 include_once 'dbs.php';
-$dbs = new dbs();
+
 /**
 *   (c) INCC Group  2015-2016
 */
@@ -22,6 +22,7 @@ class Notification{
   public function selectNotification($ownerId){
     //  N = NEW
     $sql = "Select * from notification where to_userId = '$ownerId' and status = 'N'";
+
     return mysqli_query($this->conn,$sql);
     //return $sql;
   }

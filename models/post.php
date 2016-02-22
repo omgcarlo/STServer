@@ -1,7 +1,5 @@
 <?php
 include_once 'dbs.php';
-$dbs = new dbs();
-$conn = $dbs->connect();
 
     /**
     *   (c) INCC Group  2015-2016
@@ -28,7 +26,7 @@ class Post{
         return mysqli_query($this->conn,$sql);
     }
     public function getFeed($userId){
-        $sql = "Select * from post where ownerId = '$userId'";
+        $sql = "Select * from post where ownerId = '$userId' and status = 'A'";
         return mysqli_query($this->conn,$sql);
     }
     public function getPost($postId){
@@ -64,6 +62,11 @@ class Post{
       //	convert string to array
       $postId = preg_match("/share:(.*?):/", $description, $display);
 
+    }
+    public function deletePost($postId){
+        $sql = "DELETE from post where postId = $postId";
+        echo $sql;
+        return mysqli_fetch_array($this->conn,$sql);
     }
     public function getTimePast($d){
         $finaltime = "";

@@ -12,19 +12,34 @@ if(isset($_GET['action'])){
       $ownerId = $_POST['ownerId'];
       $res = $obj->selectNotification($ownerId);
       if($res){
+        include_once 'user.php';
+        $user = new User();
         $rowNotification = mysqli_fetch_array($res);
         $output = array();
-        $output['Notification'] = $rowNotification['reference'];
-        $output['notificationId'] = $rowNotification['notificationId'];
-        $output['description'] = $rowNotification['description'];
-        $output['referenceId'] = $rowNotification['referenceId'];
-        if($rowNotification['fromId'] != NULL){
-          include_once 'user.php';
-          $user = new User();
+        if($rowNotification['reference'] == null){
+          die();
 
+        }
+        if($rowNotification['fromId'] != NULL){
           $rowUser = mysqli_fetch_array($user->getUserDetails($rowNotification['fromId']));
-          $output['from_username'] = $rowUser['username'];
-          $output['from_userId'] =  $rowUser['schoolId'];
+            if($ownerId == $rowUser['schoolId']){
+              die();
+            }
+            $output['from_full_name'] = $rowUser['full_name'];
+            $output['from_username'] = $rowUser['username'];
+            $output['from_userId'] =  $rowUser['schoolId'];
+            $output['Notification'] = $rowNotification['reference'];
+            $output['notificationId'] = $rowNotification['notificationId'];
+            $output['description'] = $rowNotification['description'];
+            $output['referenceId'] = $rowNotification['referenceId'];
+            if($rowUser['pic_url'] == 'default/pictures/ppic.jpg'){
+              $output['pic_url'] = 'http://'.$ip.
+                                  '/STFinal/res/'.'default/pictures/ppic.jpg';
+            }else{
+              $output['pic_url'] = 'http://'.$ip.
+                                  '/STFinal/res/users/U_'.
+                                  md5($rowUser['schoolId']).'/profile'. '/'.$rowUser['pic_url'];
+            }
         }
         echo json_encode(array("Notification" => $output),JSON_PRETTY_PRINT);
     }

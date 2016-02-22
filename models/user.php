@@ -17,8 +17,9 @@ class User{
         $this->conn = $dbs->connect();
 	}
 	public function login($username,$password){
-		$sql = "Select * from user where schoolId = '$username' or username = '$username' and password = '$password'";
-		return $sql;
+		$sql = "Select * from user where schoolId = '$username' or username = '$username' and password = '$password' and status = 'A'";
+    //die($sql);
+		return mysqli_query($this->conn,$sql);
 	}
 
 	public function signup($schoolId,$username,$password,$birthdate,

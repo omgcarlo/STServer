@@ -31,7 +31,7 @@ if(isset($_GET['action'])){
           $commentc['Comment owner'] = $rowComment['full_name'];
         }
         $commentc['status'] = $rowUser['status'];
-        $commentc['Date Reported'] = $rowUser['reportDate'];
+        $commentc['Date Reported'] = $rowUser['dateReported'];
         array_push($output,$commentc);
     }
     echo json_encode(array('Report' => $output),JSON_PRETTY_PRINT);

@@ -13,7 +13,7 @@ if(isset($_GET['action'])){
 		$username = $_POST['username'];
 		$password = $_POST['password'];
 		//die($username.$password);
-		$res =  mysqli_query($conn,$obj->login($username,$password));
+		$res =  $obj->login($username,$password);
 		//$res = mysqli_query($conn,$obj->login('121-122','jacalan'));
 		if($res){
 
@@ -31,19 +31,15 @@ if(isset($_GET['action'])){
 	            $userc["Username"] = $row1['username'];
               $userc["Bio"] = $row1['bio'];
 	            $userc["SchoolId"] = $row1['schoolId'];
-	            $userc["Program"] = $row1['name'];
-	            $userc["College"] = $row1['CollegeName'];
 							$userc['pic_url'] = 'http://'.$ip.
 							 										'/STFinal/res/users/U_'.
 																	md5($row1['schoolId']).'/profile'. '/'.$row1['pic_url'];
-	            $output = json_encode(array('User' => $userc),JSON_PRETTY_PRINT);
-
             }
             else{
             	$userc["Success"] = false;
-	            $output = json_encode(array('User' => $userc),JSON_PRETTY_PRINT);
+
             }
-             echo $output;
+             echo json_encode(array('User' => $userc),JSON_PRETTY_PRINT);;
 		}
 	}
 	else if($action == 'signup'){

@@ -14,8 +14,9 @@ class Report{
      public function insertReport($ownerId, $referenceTable, $referenceId){
      $time=date("h:i:sa");
      $cdatet = date("Y-m-d")." ".date("G:i", strtotime($time));
-      $sql = "INSERT INTO `report`(`ownerId`, `referenceTable`, `referenceId`, `reportDate`, `status`)
+      $sql = "INSERT INTO `report`(`userId`, `referenceTable`, `referenceId`, `dateReported`, `status`)
               VALUES ('$ownerId', '$referenceTable', $referenceId, '$cdatet','P')";
+              //die($sql);
        return mysqli_query($this->conn,$sql);
     }
     public function selectAllReport(){
@@ -24,7 +25,7 @@ class Report{
       return mysqli_query($this->conn,$sql);
     }
     public function selectReportsDetails(){
-      $sql = "SELECT reportId,full_name,referenceId,referenceTable,reportDate,report.status AS 'status' FROM report JOIN user ON user.schoolId = report.ownerId ";
+      $sql = "SELECT reportId,full_name,referenceId,referenceTable,dateReported,report.status AS 'status' FROM report JOIN user ON user.schoolId = report.userId ";
       return mysqli_query($this->conn,$sql);
     }
 

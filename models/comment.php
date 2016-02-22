@@ -19,7 +19,9 @@ class Comment{
           $this->conn = $dbs->connect();
   	}
     public function insertComment($postId,$userId,$comment){
-      $sql = "INSERT INTO comment(postId,userId,comment) Values($postId,'$userId','$comment')";
+      $time=date("h:i:sa");
+      $cdatet = date("Y-m-d")." ".date("G:i", strtotime($time));
+      $sql = "INSERT INTO comment(postId,userId,comment,datetime) Values($postId,'$userId','$comment','$cdatet')";
       return mysqli_query($this->conn,$sql);
     }
     public function selectAllComment($postId){
