@@ -12,7 +12,14 @@ if(isset($_POST['action'])){
 	$action = $_POST['action'];
 	//die($action);
 	if ($action == 'new') {
-        $description = $_POST['description'];
+				if(isset($_GET['share'])){
+					//	GET POST ID PARA E SHARE
+					$shareId = $_GET['share'];
+					$description = "::share:". $shareId."::".$_POST['description'];
+				}
+				else{
+					$description = $_POST['description'];
+				}
         $type = $_POST['type'];
         $ownerId = $_POST['ownerId'];
         $tags = $_POST['tags'];
@@ -125,9 +132,32 @@ else{
             if($res){
                 while($rowPost = mysqli_fetch_array($res)){
                     $posti = array();
+										$extratedPost = $obj->extractNestedPost($rowPost['description']);	//GET postId
+										if($extratedPost != "wala"){
+											$rowShare = mysqli_fetch_array($obj->getPost($extratedPost));
+											$rowShareUser = mysqli_fetch_array($user->getUserDetails($rowShare['ownerId']));
+											$posti['share_postId'] = $rowShare['postId'];
+											$posti['share_description'] = $rowShare['description'];
+											$posti['share_username'] = $rowShare['username'];
+											$posti['share_full_name'] = $rowShare['full_name'];
+											$posti['share_userType'] = $rowShare['UserType'];
+											if($rowShare['pic_url'] == 'default/pictures/ppic.jpg'){
+												$posti['share_pic_url'] = 'http://'.$ip.
+																						'/STFinal/res/'.'default/pictures/ppic.jpg';
+											}else{
+												$posti['share_pic_url'] = 'http://'.$ip.
+																						'/STFinal/res/users/U_'.
+																						md5($rowShare['ownerId']).'/profile'. '/'.$rowShare['pic_url'];
+											}
+											//hide the share in description
+											$desc = preg_replace("/::share:(.*?)::/","",$rowPost['description']);
+										}
+										else{
+											$desc = $rowPost['description'];
+										}
                     $posti['postId'] = $rowPost['postId'];
-                    $posti['description'] = $rowPost['description'];
-										if($rowPost['description'] )
+                    $posti['description'] = $desc;
+
                     $posti['ownerId'] = $rowPost['ownerId'];
                     $posti['tags'] = $rowPost['tags'];
                     $posti['schoolId'] = $rowPost['schoolId'];
@@ -175,6 +205,8 @@ else{
 			$ownerId = $_POST['ownerId'];
 			include_once 'models/comment.php';
 			$comment = new Comment();
+			include_once 'models/user.php';
+			$user = new User();
       $res = $obj->getPost($postId);
 
       $posti = array();
@@ -182,7 +214,30 @@ else{
       if($res){
           $rowPost = mysqli_fetch_array($res);
           $posti['postId'] = $rowPost['postId'];
-          $posti['description'] = $rowPost['description'];
+					$extratedPost = $obj->extractNestedPost($rowPost['description']);	//GET postId
+					if($extratedPost != "wala"){
+						$rowShare = mysqli_fetch_array($obj->getPost($extratedPost));
+						$rowShareUser = mysqli_fetch_array($user->getUserDetails($rowShare['ownerId']));
+						$posti['share_postId'] = $rowShare['postId'];
+						$posti['share_description'] = $rowShare['description'];
+						$posti['share_username'] = $rowShare['username'];
+						$posti['share_full_name'] = $rowShare['full_name'];
+						$posti['share_userType'] = $rowShare['UserType'];
+						if($rowShare['pic_url'] == 'default/pictures/ppic.jpg'){
+							$posti['share_pic_url'] = 'http://'.$ip.
+																	'/STFinal/res/'.'default/pictures/ppic.jpg';
+						}else{
+							$posti['share_pic_url'] = 'http://'.$ip.
+																	'/STFinal/res/users/U_'.
+																	md5($rowShare['ownerId']).'/profile'. '/'.$rowShare['pic_url'];
+						}
+						//hide the share in description
+						$desc = preg_replace("/::share:(.*?)::/","",$rowPost['description']);
+					}
+					else{
+						$desc = $rowPost['description'];
+					}
+					$posti['description'] = $desc;
           $posti['ownerId'] = $rowPost['ownerId'];
           $posti['tags'] = $rowPost['tags'];
           $posti['schoolId'] = $rowPost['schoolId'];
@@ -203,6 +258,19 @@ else{
 						$posti['pic_url'] = 'http://'.$ip.
 																'/STFinal/res/users/U_'.
 																md5($rowPost['schoolId']).'/profile'. '/'.$rowPost['pic_url'];
+					}
+					if ($rowPost['fileId'] != "" || $rowPost['fileId'] != NULL ) {
+						include_once 'models/file.php';
+						$file = new File();
+						$rowFile = mysqli_fetch_array($file->getFile($rowPost['fileId']));
+						$posti['file_description'] = $rowFile['description'];
+						$posti['file_url'] = 'http://'.$ip.
+																'/STFinal/res/users/U_'.
+																md5($rowPost['schoolId']).'/files'. '/'.$rowFile['fileUrl'];
+					}
+					else{
+						$posti['file_url'] = "nofile";
+						$posti['file_description'] = "nofile";
 					}
           echo json_encode(array('Post' => $posti),JSON_PRETTY_PRINT);
       }
@@ -262,7 +330,7 @@ else{
 				}
 				echo json_encode(array('Post' => $output),JSON_PRETTY_PRINT);
 		}
-		else if($action == 'share'){
+	/*	else if($action == 'share'){
 				$description = "share:". $_POST['postId'] . ":" .$_POST['description'] ;
 				$type = $_POST['type'];
 				$ownerId = $_POST['ownerId'];
@@ -278,7 +346,7 @@ else{
 					$postJSON['Success'] = false;
 				}
 				echo json_encode(array("Post" => $postJSON),JSON_PRETTY_PRINT);
-		}
+		}*/
 		else if($action == 'upload_file'){
 				$description = $_GET['description'];
 				$type = $_GET['type'];

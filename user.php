@@ -19,13 +19,13 @@ if(isset($_GET['action'])){
 
 			$ip = gethostbyname(gethostname());
 			$row = mysqli_fetch_array($res);
+			$userc = array();
 
 			if($row['schoolId'] != null){
 				//echo $row['schoolId'];
 				$res1 = $obj->userDetails($row['schoolId']);
         //die($obj->userDetails($row['schoolId']));
 				$row1 = mysqli_fetch_array($res1);
-				$userc = array();
 	            $userc["Success"] = true;
 	            $userc["Name"] = $row1['full_name'];
 	            $userc["Username"] = $row1['username'];
@@ -34,12 +34,16 @@ if(isset($_GET['action'])){
 							$userc['pic_url'] = 'http://'.$ip.
 							 										'/STFinal/res/users/U_'.
 																	md5($row1['schoolId']).'/profile'. '/'.$row1['pic_url'];
-            }
-            else{
-            	$userc["Success"] = false;
+      }
+      else{
+      	$userc["Success"] = false;
 
-            }
-             echo json_encode(array('User' => $userc),JSON_PRETTY_PRINT);;
+      }
+			if($row['status'] == 'D'){
+				$userc = array();
+				$userc["Success"] = "blocked";
+			}
+			     echo json_encode(array('User' => $userc),JSON_PRETTY_PRINT);;
 		}
 	}
 	else if($action == 'signup'){

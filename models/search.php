@@ -48,18 +48,31 @@ class Search{
       return mysqli_query($this->conn,$sql);
     }
     public function discoverNotes($searchQ,$ccode){
-    /*  $sql = "SELECT * from post JOIN file ON post.fileId = file.fileId where
-              post.description like '%$searchQ%' OR post.tags like '%$searchQ%' OR post.tags like '%$ccode%'
-              file.description like '%$searchQ%'";
-              */
       $sql = "SELECT * from note JOIN file ON note.fileId = file.fileId where
                 file.description like '%$searchQ%' and note.courseId = (SELECT courseId from course where courseNo = '$ccode') OR note.Description like '%$searchQ%'
                  and note.courseId = (SELECT courseId from course where courseNo = '$ccode')";
 
        return mysqli_query($this->conn,$sql);
     }
-    public function searchQuestions($params){
-      $sql = "SELECT * from post JOIN comment ON post.postId = comment.postId where comment.isApproved = 0";
+    public function searchQuestions($params,$ccode){  //  Params is for search queries
+      if($params == ""){
+         $sql = "SELECT * from post where post.description LIKE '%?%' OR
+          post.description LIKE '%$ccode%' OR post.tags LIKE '%$ccode%'";
+      }else{
+         $sql = "SELECT * from post where post.description LIKE '%?%' AND
+         post.description LIKE '%$params%' OR post.description LIKE '%$ccode%' OR post.tags LIKE '%$ccode%' OR post.tags LIKE '%$params%'";
+      }
+      if($params == ""){
+        $res = mysqli_query($this->conn,"SELECT postId from comment where comment LIKE '%$ccode%'");
+      }
+      else{
+        $res = mysqli_query($this->conn,"SELECT postId from comment where comment LIKE '%$params%' OR comment LIKE '%$ccode%'");
+      }
+
+      while($row = mysqli_fetch_array($res)){
+        $sql .= " OR postId = ".$row['postId'];
+      }
+
       return mysqli_query($this->conn,$sql);
     }
 }

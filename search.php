@@ -232,7 +232,16 @@ include 'models/search.php';
               }
               echo json_encode(array('Discover' => $output),JSON_PRETTY_PRINT);
         default:
-            # code...
+            //  HELP
+            //get user's course
+            $squeries = $_GET['queries'];
+            $cno = $_GET['courseNo'];       // COURSE NO.
+            $output = array();
+            while($rowSearch = mysqli_fetch_array($obj->searchQuestions($squeries,$cno))){
+                $searchi = array();
+                $searchi[''] = $rowSearch[''];
+            }
+
             break;
           }
     }

@@ -5,12 +5,8 @@ $conn = $dbs->connect();
 
     /**
     *   (c) INCC Group  2015-2016
-    *   EARLY TRAPPING!
     */
-    if (mysqli_connect_errno($conn))
-    {
-       echo "Failed to connect to MySQL: " . mysqli_connect_error();
-    }
+
 
 class Comment{
     private $conn;
@@ -26,7 +22,7 @@ class Comment{
     }
     public function selectAllComment($postId){
       //  GET ALL COMMENT FROM SINGLE POST
-      $sql = "SELECT * from comment where postId = '$postId'";
+      $sql = "SELECT * from comment where postId = '$postId' AND status = 'A'";
       return mysqli_query($this->conn,$sql);
     }
     public function selectComment($commentId){

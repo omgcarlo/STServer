@@ -1,48 +1,49 @@
 <?php
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Headers: X-Requested-With, Content-Type');
-	$conn = mysqli_connect("localhost","root","chienihgwapo61296","socialtutor");
+include_once 'dbs.php';
 
-if (mysqli_connect_errno($conn))
-{
-   echo "Failed to connect to MySQL: " . mysqli_connect_error();
-}
 
 class Course{
+	private $conn;
 	public function __construct(){
+		$dbs = new dbs();
+		$this->conn = $dbs->connect();
 	}
 	public function insert($collegeCode,$courseNo,$title,$schoolId){
 		$sql = "INSERT INTO course(CollegeCode,courseNo,descriptive_title,CreatedBy) VALUES('$collegeCode','$courseNo','$title','$schoolId')";
-		return $sql;
+		return mysqli_query($this->conn,$sql);
 	}
 	public function selectCourses(){
 		$sql = "Select * from course";
-		return $sql;
+		return mysqli_query($this->conn,$sql);
 	}
 	public function selectCourse($programId){
 		$sql = "SELECT * FROM course where courseId = $programId";
-		return $sql;
+		return mysqli_query($this->conn,$sql);
 	}
 	public function selectCollegeCourses($collegeId){
-
 		$sql = "SELECT * FROM course WHERE CollegeCode = '$collegeId' ORDER BY courseNo";
-		
-		return $sql;
+		return mysqli_query($this->conn,$sql);
 	}
 	public function programsDetails(){
 		$sql = "SELECT * FROM program JOIN college ON college.CollegeCode = program.CollegeCode";
-		return $sql;
+		return mysqli_query($this->conn,$sql);
 	}
 	public function programDetails($programId){
 		$sql = "SELECT * FROM program JOIN college ON college.CollegeCode = program.CollegeCode WHERE programId = $programId";
-		return $sql;
+		return mysqli_query($this->conn,$sql);
 	}
 	public function collegePrograms($collegeCode){
 		$sql = "SELECT * FROM program WHERE CollegeCode = '$collegeCode'";
-		return $sql;
+		return mysqli_query($this->conn,$sql);
+	}
+	public function getCourse($ccode){
+		$sql = "SELECT * FROM course where CollegeCode = '$ccode'";
+		return mysqli_query($this->conn,$sql);
 	}
 }
-$course = new Course();
+/*$course = new Course();
 if(isset($_POST['college1']) && isset( $_POST['courseNo1']) && isset($_POST['title1'])){
 	$collegeCode = $_POST['college1'];
 	$courseNo = $_POST['courseNo1'];
@@ -55,7 +56,7 @@ if(isset($_POST['college1']) && isset( $_POST['courseNo1']) && isset($_POST['tit
 	else{
 		echo 'Wrong';
 	}
-}
+} */
 
 
 

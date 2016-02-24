@@ -23,7 +23,8 @@ class Post{
           $temp .= $description[$i];
         }
         $sql = "INSERT INTO `post`(`description`, `type`, `ownerId`, `tags`,`CreatedDate`) VALUES ('$temp','$type','$ownerId','$tags','$cdatet')";
-        return mysqli_query($this->conn,$sql);
+        //die($sql);
+      return mysqli_query($this->conn,$sql);
     }
     public function getFeed($userId){
         $sql = "Select * from post where ownerId = '$userId' and status = 'A'";
@@ -60,8 +61,10 @@ class Post{
     public function extractNestedPost($description){
       //  Get postId hidden in description
       //	convert string to array
-      $postId = preg_match("/share:(.*?):/", $description, $display);
-
+      $res = preg_match("/::share:(.*?)::/", $description, $display);
+      //  but first chech kung naa bay gishare
+      //die($description."  ".$display[1]);
+      return $res? $display[1]: "wala"; // return postId of the shared post
     }
     public function deletePost($postId){
         $sql = "DELETE from post where postId = $postId";

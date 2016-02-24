@@ -1,4 +1,8 @@
-
+<?php
+$description = "share:35:asdasdasdasdasdad";
+$res = preg_replace("/share:(.*?):/","", $description);
+echo $res;
+?>
 <html>
 *********************************LOGIN*************************************************************
     <form method="post" action="user.php?action=login">
@@ -23,11 +27,11 @@
         <button type = "submit">Sign Up</button>
     </form>
 *****************************POST*****************************************************************
-     <form method="POST" action="post.php" enctype="multipart/form-data">
+     <form method="POST" action="post.php?share=165" enctype="multipart/form-data">
         <input type = "text" name = "action" value = "new"><br>
         <input type="file" name="uploaded_file" id="uploaded_file"><br/>
         ownerId:<input type = "text" name = "ownerId"><br/>
-        description:<input type = "text" name = "description"><br/>
+        description:<input type = "text" name = "description" ><br/>
         tags:<input type = "text" name = "tags"><br/>
         type:<input type = "text" name = "type"><br/>
         <button type = "submit">Post</button>
